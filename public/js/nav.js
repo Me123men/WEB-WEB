@@ -85,6 +85,7 @@ let searchProduct = () => {
             method: 'post',
             headers: new Headers({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ title: searchBox.value.toLowerCase() })
+
         })
         .then(res => res.json())
         .then(({ productURL }) => {

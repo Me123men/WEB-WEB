@@ -39,5 +39,5 @@ const showFormError = (err) => {
 
     setTimeout(() => {
         errorEle.classList.remove('show')
-    }, 2000)
+    }, 10000)
 }

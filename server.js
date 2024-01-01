@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, collection, setDoc, getDoc, updateDoc, getDocs, query, where, deleteDoc, limit,  } from "firebase/firestore";
 import stripe from 'stripe';
-// Your web app's Firebase configuration
+//  web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyATrfOXIvgSQvib-2XLwvfsiphBlq6uu5k",
     authDomain: "e-web-7c05b.firebaseapp.com",
@@ -284,31 +284,54 @@ app.get('/products', (req, res) => {
     res.sendFile("search.html", { root : "public" })
 })
 
-app.post("/search-product", (req, res) => {
 
+app.post("/search-product", (req, res) => {
     let { title } = req.body;
+    console.log("Söker efter produkt med titel:", title);
 
     let products = collection(db, "products");
 
-    // console.log(title);
     getDocs(query(products, where("name", "==", title), limit(1))).then(allProducts => {
-        
-        if(allProducts.empty){
-            return res.json({ productURL: null })
+        if (allProducts.empty) {
+            console.log("Ingen produkt hittades.");
+            return res.json({ productURL: null });
         }
 
         allProducts.forEach((product, i) => {
-
-                // console.log(product.data())
-                return res.json({ productURL: product.data().id })
-            
-        })
-
+            console.log("Produkt hittades:", product.data());
+            return res.json({ productURL: product.data().id });
+        });
     }).catch(err => {
-        console.log(err);
-    })
+        console.log("Fel vid sökning:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    });
+});
 
-})
+// app.post("/search-product", (req, res) => {
+
+//     let { title } = req.body;
+
+//     let products = collection(db, "products");
+
+//     // console.log(title);
+//     getDocs(query(products, where("name", "==", title), limit(1))).then(allProducts => {
+        
+//         if(allProducts.empty){
+//             return res.json({ productURL: null })
+//         }
+
+//         allProducts.forEach((product, i) => {
+
+//                 // console.log(product.data())
+//                 return res.json({ productURL: product.data().id })
+            
+//         })
+
+//     }).catch(err => {
+//         console.log(err);
+//     })
+
+// })
 
 // review routes
 app.post('/add-review', (req, res) => {
@@ -400,30 +423,61 @@ app.post('/stipe-checkout', async (req, res) => {
     res.json(session.url)
 })
 
+// app.get('/success', async (req, res) => {
+//     let { order, session_id } = req.query;
+//     order = decodeURI(order);
+
+//     try{
+//         const session = await stripeGateway.checkout.sessions.retrieve(session_id);
+//         // const customer = await stripeGateway.customers.retrieve(session.customer);
+
+//         const customer = session.customer_details.email;
+
+//         let date = new Date();
+
+//         let orders_collection = collection(db, "orders");
+//         let docName = `${customer.email}-order-${date.getTime()}`;
+
+//         setDoc(doc(orders_collection, docName), JSON.parse(order))
+//         .then(data => {
+//             res.redirect('/checkout?payment=done')
+//         })
+
+//     } catch{
+//         res.redirect("/404");
+//     }
+// })
+
+// ...
+app.get('/', (req, res) => {
+    res.sendFile("index.html", { root : "public" });
+});
+
+
+
 app.get('/success', async (req, res) => {
     let { order, session_id } = req.query;
     order = decodeURI(order);
 
-    try{
+    try {
         const session = await stripeGateway.checkout.sessions.retrieve(session_id);
-        // const customer = await stripeGateway.customers.retrieve(session.customer);
-
         const customer = session.customer_details.email;
-
         let date = new Date();
-
         let orders_collection = collection(db, "orders");
         let docName = `${customer.email}-order-${date.getTime()}`;
-
         setDoc(doc(orders_collection, docName), JSON.parse(order))
         .then(data => {
-            res.redirect('/checkout?payment=done')
+            res.redirect('/');
+            
         })
+        
 
-    } catch{
+     }
+        catch (error) {
+        console.error(error);
         res.redirect("/404");
     }
-})
+});
 
 
 // 404 route

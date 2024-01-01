@@ -84,3 +84,5 @@ const add_product_to_cart = product => {
     updateNavCartCounter();
     return 'added';
 }
+
+

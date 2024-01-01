@@ -1,43 +1,63 @@
-window.onload = () => {
-    if(!sessionStorage.user){
-        location.replace('/login')
+ window.onload = () => {
+    if (!sessionStorage.user) {
+        location.replace('/login');
     }
 
-    if(location.search.includes('payment=done')){
+    if (location.search.includes('payment=done')) {
         let items = [];
         localStorage.setItem('cart', JSON.stringify(items));
         showFormError("order is placed");
+        
+        
+
+        // Töm kundvagnen här
+        // Lägg till följande rad för att omdirigera till startsidan
+        setTimeout(() => {
+            location.href = '/';
+        }, 3000);
+        showFormError("order is placed");
+        clearCart();
+       
+        
+        
+        
     }
 
-    if(location.search.includes('payment_fail=true')){
-        showFormError("some error occured. Please try again");
+    if (location.search.includes('payment_fail=true')) {
+        showFormError("some error occurred. Please try again");
     }
-}
+}   
 
-// select place order button
+
+
+ // select place order button
 const placeOrderBtn = document.querySelector('.place-order-btn');
 
-placeOrderBtn.addEventListener('click', () => {
-    let address = getAddress();
+ placeOrderBtn.addEventListener('click', () => {
+     let address = getAddress();
 
-    if(address.address.length){
-        // send data to backend
-        fetch('/stipe-checkout', {
-            method: 'post',
-            headers: new Headers({'Content-Type': 'application/json'}),
-            body: JSON.stringify({
-                items: JSON.parse(localStorage.getItem('cart')),
-                address: address,
-                email: JSON.parse(sessionStorage.user).email
-            })
+     if (address.address.length) {
+         // send data to backend
+         fetch('/stipe-checkout', {
+             method: 'post',
+             headers: new Headers({'Content-Type': 'application/json'}),
+             body: JSON.stringify({
+                 items: JSON.parse(localStorage.getItem('cart')),
+                 address: address,
+                 email: JSON.parse(sessionStorage.user).email
+             })
+         })
+         .then(res => res.json())
+         .then(url => {
+             // Först omdirigera till Stripe-checkout
+             location.href = url;
+             // Sedan, töm kundvagnen
+             clearCart();
         })
-        .then(res => res.json())
-        .then(url => {
-            location.href = url;
-        })
-        .catch(err => console.log(err))
+         .catch(err => console.log(err))
     }
-})
+ }); 
+
 
 const getAddress = () => {
     // form validation
@@ -54,4 +74,25 @@ const getAddress = () => {
         return { address, street, city, state, pincode, landmark }
     }
 }
-////
+ 
+
+
+
+const clearCart = () => {
+    localStorage.removeItem('cart');
+    totalBill = 0;
+    updateBill();
+    // Uppdatera kundvagnens gränssnitt eller gör andra åtgärder som behövs
+}   
+
+
+
+
+
+ 
+
+
+
+
+
+
